@@ -1,6 +1,5 @@
 const puppeteer = require("puppeteer");
 const { Blob } = require("buffer");
-const fetch = require("node-fetch");
 const FormData = require("form-data");
 
 // ---- CONFIG ----
