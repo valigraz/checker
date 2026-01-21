@@ -6,16 +6,27 @@ on:
         - main
   schedule:
     - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: puppeteer-cron
+  cancel-in-progress: true
 
 jobs:
   run:
     runs-on: ubuntu-latest
     steps:
+      - name: Log trigger time (UTC)
+        run: echo "Triggered at $(date -u)"
+        
       - uses: actions/checkout@v4
+      
       - uses: actions/setup-node@v4
         with:
           node-version: 18
+          
       - run: npm install puppeteer form-data
+      
       - run: node script.js
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
