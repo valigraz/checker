@@ -151,11 +151,9 @@ function sendHeartbeat() {
     const hour = now.getUTCHours();    // or local time if you prefer
     const minute = now.getUTCMinutes();
 
-    // once per hour, first 5 minutes only
-    return minute < 5;
-    
-    // every 6 hours, only during first 5 minutes
-    // return hour % 6 === 0 && minute < 5;
+    const heartBeatHours = [6, 9, 13, 21];
+
+    return heartBeatHours.includes(hour) && minute < 5;
 }
 
 // ---- MAIN ----
@@ -216,8 +214,7 @@ function sendHeartbeat() {
             if (sendHeartbeat()) {
                 const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
                 const message =
-                    `<b>Paslauga nerasta</b>\n` +
-                    `Laikas: ${ltTime}`;
+                    `<b>🟢 OK</b> ${ltTime}`;
     
                 try {
                     await sendTelegramMessage(message);
