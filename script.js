@@ -145,6 +145,19 @@ async function waitForTextAnywhere(page, text, timeout = 30000) {
     return ok;
 }
 
+function sendHeartbeat() {
+    const now = new Date();
+
+    const hour = now.getUTCHours();    // or local time if you prefer
+    const minute = now.getUTCMinutes();
+
+    // once per hour, first 5 minutes only
+    return minute < 5;
+    
+    // every 6 hours, only during first 5 minutes
+    // return hour % 6 === 0 && minute < 5;
+}
+
 // ---- MAIN ----
 (async () => {
     const url = 'https://ipr.esveikata.lt/';
@@ -200,16 +213,18 @@ async function waitForTextAnywhere(page, text, timeout = 30000) {
                 console.error('[TG] Photo send failed:', e.message);
             }
         } else {
-            const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
-            const message =
-                `<b>Paslauga nerasta</b>\n` +
-                `Laikas: ${ltTime}`;
-
-            try {
-                await sendTelegramMessage(message);
-                console.log('[TG] Message notification sent.');
-            } catch (e) {
-                console.error('[TG] Message send failed:', e.message);
+            if (sendHeartbeat()) {
+                const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
+                const message =
+                    `<b>Paslauga nerasta</b>\n` +
+                    `Laikas: ${ltTime}`;
+    
+                try {
+                    await sendTelegramMessage(message);
+                    console.log('[TG] Message notification sent.');
+                } catch (e) {
+                    console.error('[TG] Message send failed:', e.message);
+                }
             }
         }
 
