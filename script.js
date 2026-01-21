@@ -1,10 +1,11 @@
-// const puppeteer = require('puppeteer');
-import puppeteer from "puppeteer";
-
-const MOD = process.platform === 'darwin' ? 'Meta' : 'Control';
-const delay = (ms) => new Promise(r => setTimeout(r, ms));
+const puppeteer = require("puppeteer");
+const { Blob } = require("buffer");
+const fetch = require("node-fetch");
+const FormData = require("form-data");
 
 // ---- CONFIG ----
+const MOD = process.platform === 'darwin' ? 'Meta' : 'Control';
+
 const MUNI_TEXT = 'Vilniaus m. sav.';
 const MUNI_SEARCH = 'Vilniaus';
 
@@ -15,13 +16,11 @@ const SERVICE_TEXT = 'Fizinės medicinos ir reabilitacijos gydytojo konsultacija
 const SERVICE_SEARCH = 'Fizinės medicinos';
 
 const TARGET_RESULT_TEXT = 'Antakalnio poliklinika'; //'Stacionarinė reabilitacija su slauga (Vaikams)';
-const POLL_INTERVAL_MS = 60_000;
 const STEP_TIMEOUT = 15_000;
 
 // ---- TELEGRAM (hardcoded) ----
-const TELEGRAM_BOT_TOKEN = '7980994407:AAF-BCgJD4bgfc7VhVPnmem4kBVXS11D5Sw';
-const TELEGRAM_CHAT_ID = '7905104655';
-const ALERT_COOLDOWN_SECONDS = 60;
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 async function sendTelegramPhoto(caption, pngBuffer) {
     if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
@@ -138,81 +137,51 @@ async function waitForTextAnywhere(page, text, timeout = 30000) {
         ],
     });
 
-    const page = await browser.newPage();
+    try {
+        const page = await browser.newPage();
+        await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
 
-    let running = true;
-    process.on('SIGINT', async () => {
-        running = false;
-        try { await browser.close(); } catch { }
-        process.exit(0);
-    });
+        const muni = await ensureSelected(page, '#municipalityInput', MUNI_TEXT, MUNI_SEARCH);
+        console.log('Municipality selected:', muni);
 
-    await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
-
-    const muni = await ensureSelected(page, '#municipalityInput', MUNI_TEXT, MUNI_SEARCH);
-    console.log('Municipality selected:', muni);
-
-    if (PRACT_TEXT) {
-        const practitioner = await ensureSelected(page, '#practitionerInput', PRACT_TEXT, PRACT_SEARCH);
-        console.log('Practitioner selected:', practitioner);
-    }
-
-    if (SERVICE_TEXT) {
-        const service = await ensureSelected(page, '#serviceInput', SERVICE_TEXT, SERVICE_SEARCH);
-        console.log('Practitioner selected:', service);
-    }
-
-    let lastFound = false;
-    let lastNotifyAt = 0;
-
-    while (running) {
-        try {
-            await ensureSelected(page, '#municipalityInput', MUNI_TEXT, MUNI_SEARCH);
-
-            if (PRACT_TEXT) {
-                await ensureSelected(page, '#practitionerInput', PRACT_TEXT, PRACT_SEARCH);
-            }
-
-            if (SERVICE_TEXT) {
-                await ensureSelected(page, '#serviceInput', SERVICE_TEXT, SERVICE_SEARCH);
-            }
-
-            await page.click('#searchButton').catch(() => { });
-            const found = await waitForTextAnywhere(page, TARGET_RESULT_TEXT, 30000);
-
-            const ts = new Date().toISOString();
-            console.log(`[${ts}] ${found ? 'FOUND' : 'NOT FOUND'} — "${TARGET_RESULT_TEXT}"`);
-            //await page.screenshot({ path: `debug-${Date.now()}.png`, fullPage: true });
-
-            if (found) {
-                const nowSec = Math.floor(Date.now() / 1000);
-                const shouldNotify = !lastFound || (nowSec - lastNotifyAt >= ALERT_COOLDOWN_SECONDS);
-                if (shouldNotify) {
-                    const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
-                    const caption =
-                        `✅ <b>Rasta paslauga</b>\n` +
-                        `Paslauga:${TARGET_RESULT_TEXT}\n` +
-                        `Savivaldybė: ${MUNI_TEXT}\n` +
-                        `Gydytojas: ${PRACT_TEXT}\n` +
-                        `${url}\n` +
-                        `Laikas: ${ltTime}`;
-
-                    try {
-                        const png = await page.screenshot({ fullPage: true });
-                        await sendTelegramPhoto(caption, png);
-                        lastNotifyAt = nowSec;
-                        console.log('[TG] Photo notification sent.');
-                    } catch (e) {
-                        console.error('[TG] Photo send failed:', e.message);
-                    }
-                }
-            }
-            lastFound = found;
-
-        } catch (err) {
-            console.error(`[Loop error] ${err?.message || err}`);
+        if (PRACT_TEXT) {
+            const practitioner = await ensureSelected(page, '#practitionerInput', PRACT_TEXT, PRACT_SEARCH);
+            console.log('Practitioner selected:', practitioner);
+        }
+    
+        if (SERVICE_TEXT) {
+            const service = await ensureSelected(page, '#serviceInput', SERVICE_TEXT, SERVICE_SEARCH);
+            console.log('Practitioner selected:', service);
         }
 
-        await delay(POLL_INTERVAL_MS);
+        await page.click("#searchButton").catch(() => { });
+        const found = await waitForTextAnywhere(page, TARGET_RESULT_TEXT, 30000);
+
+        const ts = new Date().toISOString();
+        console.log(`[${ts}] ${found ? 'FOUND' : 'NOT FOUND'} — "${TARGET_RESULT_TEXT}"`);
+
+        if (found) {
+            const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
+            const caption =
+                `✅ <b>Rasta paslauga</b>\n` +
+                `Paslauga:${TARGET_RESULT_TEXT}\n` +
+                `Savivaldybė: ${MUNI_TEXT}\n` +
+                `Gydytojas: ${PRACT_TEXT}\n` +
+                `${url}\n` +
+                `Laikas: ${ltTime}`;
+
+            try {
+                const png = await page.screenshot({ fullPage: true });
+                await sendTelegramPhoto(caption, png);
+                console.log('[TG] Photo notification sent.');
+            } catch (e) {
+                console.error('[TG] Photo send failed:', e.message);
+            }
+        }
+
+    } catch (err) {
+        console.error("[ERROR] ", err);
+    } finally {
+        await browser.close();
     }
 })();
