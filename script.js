@@ -40,6 +40,24 @@ async function sendTelegramPhoto(caption, pngBuffer) {
     }
 }
 
+async function sendTelegramMessage(message) {
+    if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+        console.warn('[WARN] Telegram not configured. Would send photo with caption:', caption);
+        return;
+    }
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+    const form = new FormData();
+    form.append('chat_id', TELEGRAM_CHAT_ID);
+    form.append('text', message);
+    form.append('parse_mode', 'HTML');
+
+    const res = await fetch(url, { method: 'POST', body: form });
+    if (!res.ok) {
+        const txt = await res.text().catch(() => '');
+        throw new Error(`Telegram sendMessage ${res.status}: ${txt}`);
+    }
+}
+
 // ---- HELPERS ----
 async function selectNgOption(page, rootSel, searchFragment, exactText, timeout = STEP_TIMEOUT) {
     await page.waitForSelector(`${rootSel} .ng-select-container`, { visible: true, timeout });
@@ -175,6 +193,18 @@ async function waitForTextAnywhere(page, text, timeout = 30000) {
                 console.log('[TG] Photo notification sent.');
             } catch (e) {
                 console.error('[TG] Photo send failed:', e.message);
+            }
+        } else {
+            const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
+            const message =
+                `<b>Paslauga nerasta</b>\n` +
+                `Laikas: ${ltTime}`;
+
+            try {
+                await sendTelegramMessage(message);
+                console.log('[TG] Message notification sent.');
+            } catch (e) {
+                console.error('[TG] Message send failed:', e.message);
             }
         }
 
