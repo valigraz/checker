@@ -151,7 +151,7 @@ function sendHeartbeat() {
     const hour = now.getUTCHours();    // or local time if you prefer
     const minute = now.getUTCMinutes();
 
-    const heartBeatHours = [6, 9, 13, 21];
+    const heartBeatHours = [4, 7, 11, 20, 23]; // UTC hours. Vilnius time +2 hours
 
     return heartBeatHours.includes(hour) && minute < 5;
 }
