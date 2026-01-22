@@ -13,7 +13,7 @@ const searchInputs = {
         TARGET_RESULT_TEXT: 'Antakalnio poliklinika'
     },
     search_2: {
-        MUNI_TEXT: 'Palangos m. sav.', // Vilniaus
+        MUNI_TEXT: 'Vilniaus m. sav.',
         MUNI_SEARCH: 'Palangos',
         SERVICE_TEXT: 'Stacionarinė reabilitacija su slauga (Vaikams)',
         SERVICE_SEARCH: 'Stacionarinė rea',
@@ -205,7 +205,7 @@ function sendHeartbeat() {
                 } catch (e) {
                     console.error('[TG] Photo send failed:', e.message);
                 }
-            } else if (false) { // not found notification turned off 
+            } else if (true) { // not found notification turned off 
                 const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
                 const caption =
                     `<b>Not found</b>\n` +
