@@ -195,7 +195,6 @@ function sendHeartbeat() {
                     `✅ <b>Rasta paslauga</b>\n` +
                     `Paslauga:${TARGET_RESULT_TEXT}\n` +
                     `Savivaldybė: ${MUNI_TEXT}\n` +
-                    `Gydytojas: ${PRACT_TEXT}\n` +
                     `${url}\n` +
                     `Laikas: ${ltTime}`;
 
@@ -208,17 +207,18 @@ function sendHeartbeat() {
                 }
             } else {
                 const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
-                const message = 
-                `<b>Not found</b>\n` +
-                `Paslauga:${SERVICE_TEXT}\n` +
-                `Savivaldybė: ${MUNI_TEXT}\n` +
-                `Laikas: ${ltTime}`;
+                const caption =
+                    `<b>Not found</b>\n` +
+                    `Paslauga:${TARGET_RESULT_TEXT}\n` +
+                    `Savivaldybė: ${MUNI_TEXT}\n` +
+                    `Laikas: ${ltTime}`;
 
                 try {
-                    await sendTelegramMessage(message);
-                    console.log('[TG] Message notification sent.');
+                    const png = await page.screenshot({ fullPage: true });
+                    await sendTelegramPhoto(caption, png);
+                    console.log('[TG] Photo notification sent.');
                 } catch (e) {
-                    console.error('[TG] Message send failed:', e.message);
+                    console.error('[TG] Photo send failed:', e.message);
                 }
             }
         };
