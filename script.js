@@ -3,8 +3,10 @@ const puppeteer = require("puppeteer");
 // ---- CONFIG ----
 const MOD = process.platform === 'darwin' ? 'Meta' : 'Control';
 const STEP_TIMEOUT = 15_000;
+const HEARTBEAT_HOURS = [4, 10, 20]; // UTC hours. Vilnius time +2 hours
+const NOT_FOUND_NOTIFY_HOURS = [10]; // UTC hours. Vilnius time +2 hours
 
-const searchInputs = {
+const SEARCH_INPUTS = {
     search_1: {
         MUNI_TEXT: 'Vilniaus m. sav.',
         MUNI_SEARCH: 'Vilniaus',
@@ -152,13 +154,11 @@ async function waitForTextAnywhere(page, text, timeout = 30000) {
     return ok;
 }
 
-function sendHeartbeat() {
+function sendHeartbeat(heartBeatHours) {
     const now = new Date();
 
     const hour = now.getUTCHours();
     const minute = now.getUTCMinutes();
-
-    const heartBeatHours = [4, 11, 20]; // UTC hours. Vilnius time +2 hours
 
     return heartBeatHours.includes(hour) && minute < 5;
 }
@@ -205,7 +205,7 @@ function sendHeartbeat() {
                 } catch (e) {
                     console.error('[TG] Photo send failed:', e.message);
                 }
-            } else if (true) { // not found notification turned off 
+            } else if (sendHeartbeat(NOT_FOUND_NOTIFY_HOURS)) {
                 const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
                 const caption =
                     `<b>Not found</b>\n` +
@@ -227,7 +227,7 @@ function sendHeartbeat() {
         await page.reload({ waitUntil: 'networkidle2', timeout: 60000 });
         await runSearchAndCheck(searchInputs.search_2);
 
-        if (sendHeartbeat()) {
+        if (sendHeartbeat(HEARTBEAT_HOURS)) {
             const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
             const message = `<b>🟢 OK</b> ${ltTime}`;
 
