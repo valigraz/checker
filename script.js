@@ -4,18 +4,24 @@ const FormData = require("form-data");
 
 // ---- CONFIG ----
 const MOD = process.platform === 'darwin' ? 'Meta' : 'Control';
-
-const MUNI_TEXT = 'Vilniaus m. sav.';
-const MUNI_SEARCH = 'Vilniaus';
-
-const PRACT_TEXT = null; //'RIMA PIKŪNIENĖ(Vilniaus universiteto ligoninė Santaros klinikos, VšĮ)';
-const PRACT_SEARCH = null; //'RIMA PIKŪN';
-
-const SERVICE_TEXT = 'Fizinės medicinos ir reabilitacijos gydytojo konsultacija (Vaikams) II lygis';
-const SERVICE_SEARCH = 'Fizinės medicinos';
-
-const TARGET_RESULT_TEXT = 'Antakalnio poliklinika'; //'Stacionarinė reabilitacija su slauga (Vaikams)';
 const STEP_TIMEOUT = 15_000;
+
+const searchInputs = {
+    search_1: {
+        MUNI_TEXT: 'Vilniaus m. sav.',
+        MUNI_SEARCH: 'Vilniaus',
+        SERVICE_TEXT: 'Fizinės medicinos ir reabilitacijos gydytojo konsultacija (Vaikams) II lygis',
+        SERVICE_SEARCH: 'Fizinės medicinos',
+        TARGET_RESULT_TEXT: 'Antakalnio poliklinika'
+    },
+    search_2: {
+        MUNI_TEXT: 'Vilniaus m. sav.',
+        MUNI_SEARCH: 'Vilniaus',
+        SERVICE_TEXT: 'Stacionarinė reabilitacija su slauga (Vaikams)',
+        SERVICE_SEARCH: 'Stacionarinė rea',
+        TARGET_RESULT_TEXT: 'Stacionarinė reabilitacija su slauga (Vaikams)',
+    }
+}
 
 // ---- TELEGRAM (hardcoded) ----
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -148,10 +154,10 @@ async function waitForTextAnywhere(page, text, timeout = 30000) {
 function sendHeartbeat() {
     const now = new Date();
 
-    const hour = now.getUTCHours();    // or local time if you prefer
+    const hour = now.getUTCHours();
     const minute = now.getUTCMinutes();
 
-    const heartBeatHours = [4, 7, 11, 20, 23]; // UTC hours. Vilnius time +2 hours
+    const heartBeatHours = [4, 11, 20]; // UTC hours. Vilnius time +2 hours
 
     return heartBeatHours.includes(hour) && minute < 5;
 }
@@ -163,59 +169,51 @@ function sendHeartbeat() {
     const browser = await puppeteer.launch({
         headless: true,
         defaultViewport: { width: 1366, height: 900 },
-        args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-        ],
+        args: [ '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage' ],
     });
 
     try {
         const page = await browser.newPage();
         await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
 
-        const muni = await ensureSelected(page, '#municipalityInput', MUNI_TEXT, MUNI_SEARCH);
-        console.log('Municipality selected:', muni);
+        const runSearchAndCheck = async ({MUNI_TEXT, MUNI_SEARCH, SERVICE_TEXT, SERVICE_SEARCH, TARGET_RESULT_TEXT}) => {
+            const muni = await ensureSelected(page, '#municipalityInput', MUNI_TEXT, MUNI_SEARCH);
+            console.log('Municipality selected:', muni);
 
-        if (PRACT_TEXT) {
-            const practitioner = await ensureSelected(page, '#practitionerInput', PRACT_TEXT, PRACT_SEARCH);
-            console.log('Practitioner selected:', practitioner);
-        }
-    
-        if (SERVICE_TEXT) {
             const service = await ensureSelected(page, '#serviceInput', SERVICE_TEXT, SERVICE_SEARCH);
             console.log('Practitioner selected:', service);
-        }
 
-        await page.click("#searchButton").catch(() => { });
-        const found = await waitForTextAnywhere(page, TARGET_RESULT_TEXT, 30000);
+            await page.click("#searchButton").catch(() => { });
+            const found = await waitForTextAnywhere(page, TARGET_RESULT_TEXT, 30000);
 
-        const ts = new Date().toISOString();
-        console.log(`[${ts}] ${found ? 'FOUND' : 'NOT FOUND'} — "${TARGET_RESULT_TEXT}"`);
+            const ts = new Date().toISOString();
+            console.log(`[${ts}] ${found ? 'FOUND' : 'NOT FOUND'} — "${TARGET_RESULT_TEXT}"`);
 
-        if (found) {
-            const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
-            const caption =
-                `✅ <b>Rasta paslauga</b>\n` +
-                `Paslauga:${TARGET_RESULT_TEXT}\n` +
+            if (found) {
+                const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
+                const caption =
+                    `✅ <b>Rasta paslauga</b>\n` +
+                    `Paslauga:${TARGET_RESULT_TEXT}\n` +
+                    `Savivaldybė: ${MUNI_TEXT}\n` +
+                    `Gydytojas: ${PRACT_TEXT}\n` +
+                    `${url}\n` +
+                    `Laikas: ${ltTime}`;
+
+                try {
+                    const png = await page.screenshot({ fullPage: true });
+                    await sendTelegramPhoto(caption, png);
+                    console.log('[TG] Photo notification sent.');
+                } catch (e) {
+                    console.error('[TG] Photo send failed:', e.message);
+                }
+            } else {
+                const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
+                const message = 
+                `<b>Not found</b>\n` +
+                `Paslauga:${SERVICE_TEXT}\n` +
                 `Savivaldybė: ${MUNI_TEXT}\n` +
-                `Gydytojas: ${PRACT_TEXT}\n` +
-                `${url}\n` +
                 `Laikas: ${ltTime}`;
 
-            try {
-                const png = await page.screenshot({ fullPage: true });
-                await sendTelegramPhoto(caption, png);
-                console.log('[TG] Photo notification sent.');
-            } catch (e) {
-                console.error('[TG] Photo send failed:', e.message);
-            }
-        } else {
-            if (sendHeartbeat()) {
-                const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
-                const message =
-                    `<b>🟢 OK</b> ${ltTime}`;
-    
                 try {
                     await sendTelegramMessage(message);
                     console.log('[TG] Message notification sent.');
@@ -223,8 +221,22 @@ function sendHeartbeat() {
                     console.error('[TG] Message send failed:', e.message);
                 }
             }
-        }
+        };
 
+        await runSearchAndCheck(searchInputs.search_1);
+        await runSearchAndCheck(searchInputs.search_2);
+
+        if (sendHeartbeat()) {
+            const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
+            const message = `<b>🟢 OK</b> ${ltTime}`;
+
+            try {
+                await sendTelegramMessage(message);
+                console.log('[TG] Message notification sent.');
+            } catch (e) {
+                console.error('[TG] Message send failed:', e.message);
+            }
+        }
     } catch (err) {
         console.error("[ERROR] ", err);
     } finally {
