@@ -223,9 +223,9 @@ function sendHeartbeat(heartBeatHours) {
             }
         };
 
-        await runSearchAndCheck(searchInputs.search_1);
+        await runSearchAndCheck(SEARCH_INPUTS.search_1);
         await page.reload({ waitUntil: 'networkidle2', timeout: 60000 });
-        await runSearchAndCheck(searchInputs.search_2);
+        await runSearchAndCheck(SEARCH_INPUTS.search_2);
 
         if (sendHeartbeat(HEARTBEAT_HOURS)) {
             const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
