@@ -10,7 +10,7 @@ const searchInputs = {
         MUNI_SEARCH: 'Vilniaus',
         SERVICE_TEXT: 'Fizinės medicinos ir reabilitacijos gydytojo konsultacija (Vaikams) II lygis',
         SERVICE_SEARCH: 'Fizinės medicinos',
-        TARGET_RESULT_TEXT: 'Antakalnio poliklinika'
+        TARGET_RESULT_TEXT: 'Euromed' //'Antakalnio poliklinika'
     },
     search_2: {
         MUNI_TEXT: 'Vilniaus m. sav.',
@@ -206,7 +206,7 @@ function sendHeartbeat() {
                 } catch (e) {
                     console.error('[TG] Photo send failed:', e.message);
                 }
-            } else {
+            } else if (false) { // not found notification turned off 
                 const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
                 const caption =
                     `<b>Not found</b>\n` +
