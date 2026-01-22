@@ -1,6 +1,4 @@
 const puppeteer = require("puppeteer");
-const { Blob } = require("buffer");
-const FormData = require("form-data");
 
 // ---- CONFIG ----
 const MOD = process.platform === 'darwin' ? 'Meta' : 'Control';
@@ -32,7 +30,9 @@ async function sendTelegramPhoto(caption, pngBuffer) {
         console.warn('[WARN] Telegram not configured. Would send photo with caption:', caption);
         return;
     }
+
     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`;
+    
     const form = new FormData();
     form.append('chat_id', TELEGRAM_CHAT_ID);
     form.append('caption', caption);
@@ -40,8 +40,9 @@ async function sendTelegramPhoto(caption, pngBuffer) {
     form.append('photo', new Blob([pngBuffer], { type: 'image/png' }), 'proof.png');
 
     const res = await fetch(url, { method: 'POST', body: form });
+    
     if (!res.ok) {
-        const txt = await res.text().catch(() => '');
+        const txt = await res.text();
         throw new Error(`Telegram sendPhoto ${res.status}: ${txt}`);
     }
 }
