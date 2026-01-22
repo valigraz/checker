@@ -14,7 +14,7 @@ const searchInputs = {
     },
     search_2: {
         MUNI_TEXT: 'Vilniaus m. sav.',
-        MUNI_SEARCH: 'Palangos',
+        MUNI_SEARCH: 'Vilniaus',
         SERVICE_TEXT: 'Stacionarinė reabilitacija su slauga (Vaikams)',
         SERVICE_SEARCH: 'Stacionarinė rea',
         TARGET_RESULT_TEXT: 'Su siuntimu',
