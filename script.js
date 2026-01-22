@@ -17,7 +17,7 @@ const searchInputs = {
         MUNI_SEARCH: 'Vilniaus',
         SERVICE_TEXT: 'Stacionarinė reabilitacija su slauga (Vaikams)',
         SERVICE_SEARCH: 'Stacionarinė rea',
-        TARGET_RESULT_TEXT: 'Stacionarinė reabilitacija su slauga (Vaikams)',
+        TARGET_RESULT_TEXT: 'Su siuntimu',
     }
 }
 
@@ -225,6 +225,7 @@ function sendHeartbeat() {
         };
 
         await runSearchAndCheck(searchInputs.search_1);
+        await page.reload({ waitUntil: 'networkidle2', timeout: 60000 });
         await runSearchAndCheck(searchInputs.search_2);
 
         if (sendHeartbeat()) {
