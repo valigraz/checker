@@ -10,11 +10,11 @@ const searchInputs = {
         MUNI_SEARCH: 'Vilniaus',
         SERVICE_TEXT: 'Fizinės medicinos ir reabilitacijos gydytojo konsultacija (Vaikams) II lygis',
         SERVICE_SEARCH: 'Fizinės medicinos',
-        TARGET_RESULT_TEXT: 'Euromed' //'Antakalnio poliklinika'
+        TARGET_RESULT_TEXT: 'Antakalnio poliklinika'
     },
     search_2: {
-        MUNI_TEXT: 'Vilniaus m. sav.',
-        MUNI_SEARCH: 'Vilniaus',
+        MUNI_TEXT: 'Palangos m. sav.', // Vilniaus
+        MUNI_SEARCH: 'Palangos',
         SERVICE_TEXT: 'Stacionarinė reabilitacija su slauga (Vaikams)',
         SERVICE_SEARCH: 'Stacionarinė rea',
         TARGET_RESULT_TEXT: 'Su siuntimu',
@@ -194,9 +194,8 @@ function sendHeartbeat() {
                 const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
                 const caption =
                     `✅ <b>Rasta paslauga</b>\n` +
-                    `Paslauga:${TARGET_RESULT_TEXT}\n` +
                     `Savivaldybė: ${MUNI_TEXT}\n` +
-                    `${url}\n` +
+                    `Paslauga: ${TARGET_RESULT_TEXT}\n` +
                     `Laikas: ${ltTime}`;
 
                 try {
@@ -210,7 +209,7 @@ function sendHeartbeat() {
                 const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
                 const caption =
                     `<b>Not found</b>\n` +
-                    `Paslauga:${TARGET_RESULT_TEXT}\n` +
+                    `Paslauga: ${TARGET_RESULT_TEXT}\n` +
                     `Savivaldybė: ${MUNI_TEXT}\n` +
                     `Laikas: ${ltTime}`;
 
