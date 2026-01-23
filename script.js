@@ -136,7 +136,7 @@ async function ensureSelected(page, rootSel, expectedExact, searchFragment) {
     return selectNgOption(page, rootSel, searchFragment, expectedExact);
 }
 
-async function waitForTextAnywhere(page, text, timeout = 30000) {
+async function waitForTextAnywhere(page, text, timeout = 15000) {
     const ok = await page
         .waitForFunction((t) => {
             const norm = (s) =>
@@ -169,15 +169,25 @@ function sendHeartbeat(heartBeatHours) {
 
     const browser = await puppeteer.launch({
         headless: true,
-        defaultViewport: { width: 1366, height: 900 },
-        args: [ '--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage' ],
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--disable-background-networking',
+            '--disable-background-timer-throttling',
+            '--disable-renderer-backgrounding',
+            '--disable-extensions',
+        ],
     });
 
     try {
-        const page = await browser.newPage();
-        await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
+        const page1 = await browser.newPage();
+        const page2 = await browser.newPage();
 
-        const runSearchAndCheck = async ({MUNI_TEXT, MUNI_SEARCH, SERVICE_TEXT, SERVICE_SEARCH, TARGET_RESULT_TEXT}) => {
+        const runSearchAndCheck = async (page, {MUNI_TEXT, MUNI_SEARCH, SERVICE_TEXT, SERVICE_SEARCH, TARGET_RESULT_TEXT}) => {
+            await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+            
             const muni = await ensureSelected(page, '#municipalityInput', MUNI_TEXT, MUNI_SEARCH);
             console.log('Municipality selected:', muni);
 
@@ -185,7 +195,7 @@ function sendHeartbeat(heartBeatHours) {
             console.log('Practitioner selected:', service);
 
             await page.click("#searchButton").catch(() => { });
-            const found = await waitForTextAnywhere(page, TARGET_RESULT_TEXT, 30000);
+            const found = await waitForTextAnywhere(page, TARGET_RESULT_TEXT);
 
             const ts = new Date().toISOString();
             console.log(`[${ts}] ${found ? 'FOUND' : 'NOT FOUND'} — "${TARGET_RESULT_TEXT}"`);
@@ -199,7 +209,7 @@ function sendHeartbeat(heartBeatHours) {
                     `Laikas: ${ltTime}`;
 
                 try {
-                    const png = await page.screenshot({ fullPage: true });
+                    const png = await page.screenshot();
                     await sendTelegramPhoto(caption, png);
                     console.log('[TG] Photo notification sent.');
                 } catch (e) {
@@ -214,7 +224,7 @@ function sendHeartbeat(heartBeatHours) {
                     `Laikas: ${ltTime}`;
 
                 try {
-                    const png = await page.screenshot({ fullPage: true });
+                    const png = await page.screenshot();
                     await sendTelegramPhoto(caption, png);
                     console.log('[TG] Photo notification sent.');
                 } catch (e) {
@@ -223,9 +233,8 @@ function sendHeartbeat(heartBeatHours) {
             }
         };
 
-        await runSearchAndCheck(SEARCH_INPUTS.search_1);
-        await page.reload({ waitUntil: 'networkidle2', timeout: 60000 });
-        await runSearchAndCheck(SEARCH_INPUTS.search_2);
+        await runSearchAndCheck(page1, SEARCH_INPUTS.search_1);
+        await runSearchAndCheck(page2, SEARCH_INPUTS.search_2);
 
         if (sendHeartbeat(HEARTBEAT_HOURS)) {
             const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
