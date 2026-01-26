@@ -10,6 +10,8 @@ const SEARCH_INPUTS = {
     search_1: {
         MUNI_TEXT: 'Vilniaus m. sav.',
         MUNI_SEARCH: 'Vilniaus',
+        PRACT_TEXT: '',
+        PRACT_SEARCH: '',
         SERVICE_TEXT: 'Fizinės medicinos ir reabilitacijos gydytojo konsultacija (Vaikams) II lygis',
         SERVICE_SEARCH: 'Fizinės medicinos',
         TARGET_RESULT_TEXT: 'Antakalnio poliklinika'
@@ -17,9 +19,11 @@ const SEARCH_INPUTS = {
     search_2: {
         MUNI_TEXT: 'Vilniaus m. sav.',
         MUNI_SEARCH: 'Vilniaus',
-        SERVICE_TEXT: 'Stacionarinė reabilitacija su slauga (Vaikams)',
-        SERVICE_SEARCH: 'Stacionarinė rea',
-        TARGET_RESULT_TEXT: 'Su siuntimu',
+        PRACT_TEXT: 'RIMA PIKŪNIENĖ(Vilniaus universiteto ligoninė Santaros klinikos, VšĮ)',
+        PRACT_SEARCH: 'RIMA PIKŪN',
+        SERVICE_TEXT: '',
+        SERVICE_SEARCH: '',
+        TARGET_RESULT_TEXT: 'Stacionarinė reabilitacija su slauga (Vaikams)'
     }
 }
 
@@ -182,13 +186,20 @@ function sendHeartbeat(heartBeatHours) {
             page2.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 }),
         ]);
 
-        const runSearchAndCheck = async (page, {MUNI_TEXT, MUNI_SEARCH, SERVICE_TEXT, SERVICE_SEARCH, TARGET_RESULT_TEXT}) => {            
+        const runSearchAndCheck = async (page, {MUNI_TEXT, MUNI_SEARCH, PRACT_TEXT, PRACT_SEARCH, SERVICE_TEXT, SERVICE_SEARCH, TARGET_RESULT_TEXT}) => {            
             const muni = await ensureSelected(page, '#municipalityInput', MUNI_TEXT, MUNI_SEARCH);
             console.log('Municipality selected:', muni);
 
-            const service = await ensureSelected(page, '#serviceInput', SERVICE_TEXT, SERVICE_SEARCH);
-            console.log('Practitioner selected:', service);
+            if (PRACT_TEXT) {
+                const service = await ensureSelected(page, '#practitionerInput', PRACT_TEXT, PRACT_SEARCH);
+                console.log('Practitioner selected:', service);
+            }
 
+            if (SERVICE_TEXT) {
+                const service = await ensureSelected(page, '#serviceInput', SERVICE_TEXT, SERVICE_SEARCH);
+                console.log('Service selected:', service);
+            }
+            
             await page.click("#searchButton").catch(() => { });
             const found = await waitForTextAnywhere(page, TARGET_RESULT_TEXT, 8000);
 
