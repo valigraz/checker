@@ -174,10 +174,15 @@ function sendHeartbeat(heartBeatHours) {
     });
 
     try {
-        const page = await browser.newPage();
-        await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
-        
-        const runSearchAndCheck = async ({MUNI_TEXT, MUNI_SEARCH, SERVICE_TEXT, SERVICE_SEARCH, TARGET_RESULT_TEXT}) => {
+        const page1 = await browser.createBrowserContext().then(c => c.newPage());
+        const page2 = await browser.createBrowserContext().then(c => c.newPage());
+
+        await Promise.all([
+            page1.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 }),
+            page2.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 }),
+        ]);
+
+        const runSearchAndCheck = async (page, {MUNI_TEXT, MUNI_SEARCH, SERVICE_TEXT, SERVICE_SEARCH, TARGET_RESULT_TEXT}) => {            
             const muni = await ensureSelected(page, '#municipalityInput', MUNI_TEXT, MUNI_SEARCH);
             console.log('Municipality selected:', muni);
 
@@ -205,7 +210,7 @@ function sendHeartbeat(heartBeatHours) {
                 } catch (e) {
                     console.error('[TG] Photo send failed:', e.message);
                 }
-            } else if (sendHeartbeat(NOT_FOUND_NOTIFY_HOURS)) {
+            } else  { //if (sendHeartbeat(NOT_FOUND_NOTIFY_HOURS))
                 const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
                 const caption =
                     `<b>Not found</b>\n` +
@@ -223,9 +228,10 @@ function sendHeartbeat(heartBeatHours) {
             }
         };
 
-        await runSearchAndCheck(SEARCH_INPUTS.search_1);
-        await page.reload({ waitUntil: 'networkidle2', timeout: 60000 });
-        await runSearchAndCheck(SEARCH_INPUTS.search_2);
+        await Promise.all([
+            runSearchAndCheck(page1, SEARCH_INPUTS.search_1),
+            runSearchAndCheck(page2, SEARCH_INPUTS.search_2),
+        ]);
 
         if (sendHeartbeat(HEARTBEAT_HOURS)) {
             const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
