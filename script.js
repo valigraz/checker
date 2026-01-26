@@ -190,7 +190,7 @@ function sendHeartbeat(heartBeatHours) {
             console.log('Practitioner selected:', service);
 
             await page.click("#searchButton").catch(() => { });
-            const found = await waitForTextAnywhere(page, TARGET_RESULT_TEXT, 30000);
+            const found = await waitForTextAnywhere(page, TARGET_RESULT_TEXT, 8000);
 
             const ts = new Date().toISOString();
             console.log(`[${ts}] ${found ? 'FOUND' : 'NOT FOUND'} — "${TARGET_RESULT_TEXT}"`);
