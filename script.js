@@ -174,12 +174,10 @@ function sendHeartbeat(heartBeatHours) {
     });
 
     try {
-        const page1 = await browser.newPage();
-        const page2 = await browser.newPage();
+        const page = await browser.newPage();
+        await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
         
-        const runSearchAndCheck = async (page, {MUNI_TEXT, MUNI_SEARCH, SERVICE_TEXT, SERVICE_SEARCH, TARGET_RESULT_TEXT}) => {
-            await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
-            
+        const runSearchAndCheck = async ({MUNI_TEXT, MUNI_SEARCH, SERVICE_TEXT, SERVICE_SEARCH, TARGET_RESULT_TEXT}) => {
             const muni = await ensureSelected(page, '#municipalityInput', MUNI_TEXT, MUNI_SEARCH);
             console.log('Municipality selected:', muni);
 
@@ -225,9 +223,9 @@ function sendHeartbeat(heartBeatHours) {
             }
         };
 
-        await runSearchAndCheck(page1, SEARCH_INPUTS.search_1);
-        //await page.reload({ waitUntil: 'networkidle2', timeout: 60000 });
-        await runSearchAndCheck(page2, SEARCH_INPUTS.search_2);
+        await runSearchAndCheck(SEARCH_INPUTS.search_1);
+        await page.reload({ waitUntil: 'networkidle2', timeout: 60000 });
+        await runSearchAndCheck(SEARCH_INPUTS.search_2);
 
         if (sendHeartbeat(HEARTBEAT_HOURS)) {
             const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
