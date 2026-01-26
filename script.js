@@ -221,7 +221,7 @@ function sendHeartbeat(heartBeatHours) {
                 } catch (e) {
                     console.error('[TG] Photo send failed:', e.message);
                 }
-            } else  { //if (sendHeartbeat(NOT_FOUND_NOTIFY_HOURS))
+            } else if (sendHeartbeat(NOT_FOUND_NOTIFY_HOURS)) {
                 const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
                 const caption =
                     `<b>Not found</b>\n` +
