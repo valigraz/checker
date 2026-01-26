@@ -14,7 +14,7 @@ const SEARCH_INPUTS = {
         PRACT_SEARCH: '',
         SERVICE_TEXT: 'Fizinės medicinos ir reabilitacijos gydytojo konsultacija (Vaikams) II lygis',
         SERVICE_SEARCH: 'Fizinės medicinos',
-        TARGET_RESULT_TEXT: 'Vilnios poliklinika' //Antakalnio
+        TARGET_RESULT_TEXT: 'Antakalnio poliklinika'
     },
     search_2: {
         MUNI_TEXT: 'Vilniaus m. sav.',
