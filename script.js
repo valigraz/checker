@@ -164,7 +164,7 @@ function sendHeartbeat(heartBeatHours) {
     const hour = now.getUTCHours();
     const minute = now.getUTCMinutes();
 
-    return heartBeatHours.includes(hour) && minute < 5;
+    return heartBeatHours.includes(hour) && minute < 2;
 }
 
 // ---- MAIN ----
