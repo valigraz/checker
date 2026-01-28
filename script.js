@@ -14,7 +14,11 @@ const SEARCH_INPUTS = {
         PRACT_SEARCH: '',
         SERVICE_TEXT: 'Fizinės medicinos ir reabilitacijos gydytojo konsultacija (Vaikams) II lygis',
         SERVICE_SEARCH: 'Fizinės medicinos',
-        TARGET_RESULT_TEXT: 'Antakalnio poliklinika'
+        TARGET_RESULT_TEXT: 'Antakalnio poliklinika',
+        // earliest date inputs
+        EARLIEST_DATE: true,
+        DAYS_AHEAD: 5,
+        EXCLUDE_ORGANIZATIONS: ['Euromed klinika, Sanum medicale, UAB']
     },
     search_2: {
         MUNI_TEXT: 'Vilniaus m. sav.',
@@ -23,7 +27,11 @@ const SEARCH_INPUTS = {
         PRACT_SEARCH: 'RIMA PIKŪN',
         SERVICE_TEXT: '',
         SERVICE_SEARCH: '',
-        TARGET_RESULT_TEXT: 'Stacionarinė reabilitacija su slauga (Vaikams)'
+        TARGET_RESULT_TEXT: 'Stacionarinė reabilitacija su slauga (Vaikams)',
+        // earliest date inputs
+        EARLIEST_DATE: false,
+        DAYS_AHEAD: null,
+        EXCLUDE_ORGANIZATIONS: []
     }
 }
 
@@ -158,6 +166,69 @@ async function waitForTextAnywhere(page, text, timeout = 30000) {
     return ok;
 }
 
+async function waitForDateInTable(page, DAYS_AHEAD, EXCLUDE_ORGANIZATIONS, timeout = 8000) {
+  const REQUIRED_NEED = "Ligonių kasos";
+  const TABLE_SELECTOR = "table.table tbody";
+
+  // Vilnius local "today + next 5 days" (inclusive)
+  const now = new Date();
+  const vilniusNow = new Date(
+    now.toLocaleString("en-US", { timeZone: "Europe/Vilnius" })
+  );
+
+  // Build allowed YYYY-MM-DD strings for today..today+4
+  const allowedDates = [];
+  for (let i = 0; i < DAYS_AHEAD; i++) {
+    const dt = new Date(vilniusNow);
+    dt.setDate(dt.getDate() + i);
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth() + 1).padStart(2, "0");
+    const d = String(dt.getDate()).padStart(2, "0");
+    allowedDates.push(`${y}-${m}-${d}`);
+  }
+
+  const ok = await page
+    .waitForFunction(
+      ({ TABLE_SELECTOR, REQUIRED_NEED, EXCLUDE_ORGANIZATIONS, allowedDates }) => {
+        const tbody = document.querySelector(TABLE_SELECTOR);
+        if (!tbody) return false;
+
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+        for (const tr of rows) {
+          const tds = tr.querySelectorAll("td");
+          if (tds.length < 5) continue;
+
+          const orgCell = (tds[0].textContent || "").trim();
+          if (
+            Array.isArray(EXCLUDE_ORGANIZATIONS) &&
+            EXCLUDE_ORGANIZATIONS.length > 0 &&
+            EXCLUDE_ORGANIZATIONS.some((v) => orgCell.includes(v))
+          ) {
+            continue; // skip excluded orgs, don't stop waiting
+          }
+
+          const need = (tds[2].textContent || "").replace(/\s+/g, " ").trim();
+          if (need !== REQUIRED_NEED) continue;
+
+          const timeText = (tds[4].textContent || "").replace(/\s+/g, " ").trim();
+          const match = timeText.match(/\b(\d{4}-\d{2}-\d{2})\b/);
+          if (!match) continue;
+
+          const dateStr = match[1];
+          if (allowedDates.includes(dateStr)) return true;
+        }
+
+        return false; // keep waiting
+      },
+      { timeout },
+      { TABLE_SELECTOR, REQUIRED_NEED, EXCLUDE_ORGANIZATIONS, allowedDates }
+    )
+    .then(() => true)
+    .catch(() => false);
+
+  return ok;
+}
+
 function sendHeartbeat(heartBeatHours) {
     const now = new Date();
 
@@ -186,7 +257,7 @@ function sendHeartbeat(heartBeatHours) {
             page2.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 }),
         ]);
 
-        const runSearchAndCheck = async (page, {MUNI_TEXT, MUNI_SEARCH, PRACT_TEXT, PRACT_SEARCH, SERVICE_TEXT, SERVICE_SEARCH, TARGET_RESULT_TEXT}) => {            
+        const runSearchAndCheck = async (page, {MUNI_TEXT, MUNI_SEARCH, PRACT_TEXT, PRACT_SEARCH, SERVICE_TEXT, SERVICE_SEARCH, TARGET_RESULT_TEXT, EARLIEST_DATE, DAYS_AHEAD, EXCLUDE_ORGANIZATIONS}) => {            
             const muni = await ensureSelected(page, '#municipalityInput', MUNI_TEXT, MUNI_SEARCH);
             console.log('Municipality selected:', muni);
 
@@ -201,17 +272,27 @@ function sendHeartbeat(heartBeatHours) {
             }
             
             await page.click("#searchButton").catch(() => { });
-            const found = await waitForTextAnywhere(page, TARGET_RESULT_TEXT, 8000);
+            let found;
+
+            if (EARLIEST_DATE) {
+                found = await waitForDateInTable(page, DAYS_AHEAD, EXCLUDE_ORGANIZATIONS, 8000);
+            } else {
+                found = await waitForTextAnywhere(page, TARGET_RESULT_TEXT, 8000);
+            }
 
             const ts = new Date().toISOString();
-            console.log(`[${ts}] ${found ? 'FOUND' : 'NOT FOUND'} — "${TARGET_RESULT_TEXT}"`);
+            if (EARLIEST_DATE) {
+                console.log(`[${ts}] ${found ? 'FOUND' : 'NOT FOUND'} — "${SERVICE_SEARCH}"`);
+            } else {
+                console.log(`[${ts}] ${found ? 'FOUND' : 'NOT FOUND'} — "${TARGET_RESULT_TEXT}"`);
+            }
 
             if (found) {
                 const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
                 const caption =
                     `✅ <b>Rasta paslauga</b>\n` +
                     `Savivaldybė: ${MUNI_TEXT}\n` +
-                    `Paslauga: ${TARGET_RESULT_TEXT}\n` +
+                    `Paslauga: ${EARLIEST_DATE ? SERVICE_SEARCH : TARGET_RESULT_TEXT}\n` +
                     `Laikas: ${ltTime}`;
 
                 try {
@@ -225,7 +306,7 @@ function sendHeartbeat(heartBeatHours) {
                 const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
                 const caption =
                     `<b>Not found</b>\n` +
-                    `Paslauga: ${TARGET_RESULT_TEXT}\n` +
+                    `Paslauga: ${EARLIEST_DATE ? SERVICE_SEARCH : TARGET_RESULT_TEXT}\n` +
                     `Savivaldybė: ${MUNI_TEXT}\n` +
                     `Laikas: ${ltTime}`;
 
