@@ -17,7 +17,7 @@ const SEARCH_INPUTS = {
         TARGET_RESULT_TEXT: 'Antakalnio poliklinika',
         // earliest date inputs
         EARLIEST_DATE: true,
-        DAYS_AHEAD: 12,
+        DAYS_AHEAD: 2,
         EXCLUDE_ORGANIZATIONS: ['Euromed klinika, Sanum medicale, UAB', 'Viešoji įstaiga Vilniaus rajono poliklinika']
     },
     search_2: {
