@@ -18,7 +18,7 @@ const SEARCH_INPUTS = {
         // earliest date inputs
         EARLIEST_DATE: true,
         DAYS_AHEAD: 12,
-        EXCLUDE_ORGANIZATIONS: [] //['Euromed klinika, Sanum medicale, UAB']
+        EXCLUDE_ORGANIZATIONS: ['Euromed klinika, Sanum medicale, UAB', 'Viešoji įstaiga Vilniaus rajono poliklinika']
     },
     search_2: {
         MUNI_TEXT: 'Vilniaus m. sav.',
