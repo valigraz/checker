@@ -220,10 +220,10 @@ async function waitForDateInTable(page, DAYS_AHEAD, EXCLUDE_ORGANIZATIONS, timeo
             continue; // skip excluded orgs, don't stop waiting
           }
 
-          const need = (tds[2].textContent || "").replace(/\s+/g, " ").trim();
+          const need = (tds[3].textContent || "").replace(/\s+/g, " ").trim();
           if (need !== REQUIRED_NEED) continue;
 
-          const timeText = (tds[4].textContent || "").replace(/\s+/g, " ").trim();
+          const timeText = (tds[5].textContent || "").replace(/\s+/g, " ").trim();
           const match = timeText.match(/\b(\d{4}-\d{2}-\d{2})\b/);
           if (!match) continue;
 
