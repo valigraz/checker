@@ -16,7 +16,7 @@ const SEARCH_INPUTS = {
         SERVICE_SEARCH: 'Fizinės medicinos',
         TARGET_RESULT_TEXT: 'Antakalnio poliklinika',
         // earliest date inputs
-        EARLIEST_DATE: true,
+        EARLIEST_DATE: false,
         DAYS_AHEAD: 2,
         EXCLUDE_ORGANIZATIONS: ['Šeškinės poliklinika, VšĮ', 'Euromed klinika, Sanum medicale, UAB', 'Viešoji įstaiga Vilniaus rajono poliklinika']
     },
