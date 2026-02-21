@@ -7,18 +7,31 @@ const HEARTBEAT_HOURS = [4, 20]; // UTC hours. Vilnius time +2 hours
 const NOT_FOUND_NOTIFY_HOURS = [11]; // UTC hours. Vilnius time +2 hours
 
 const SEARCH_INPUTS = {
+    // search_1: {
+    //     MUNI_TEXT: 'Vilniaus m. sav.',
+    //     MUNI_SEARCH: 'Vilniaus',
+    //     PRACT_TEXT: '',
+    //     PRACT_SEARCH: '',
+    //     SERVICE_TEXT: 'Fizinės medicinos ir reabilitacijos gydytojo konsultacija (Vaikams) II lygis',
+    //     SERVICE_SEARCH: 'Fizinės medicinos',
+    //     TARGET_RESULT_TEXT: 'Antakalnio poliklinika',
+    //     // earliest date inputs
+    //     EARLIEST_DATE: false,
+    //     DAYS_AHEAD: 2,
+    //     EXCLUDE_ORGANIZATIONS: ['Šeškinės poliklinika, VšĮ', 'Euromed klinika, Sanum medicale, UAB', 'Viešoji įstaiga Vilniaus rajono poliklinika']
+    // },
     search_1: {
         MUNI_TEXT: 'Vilniaus m. sav.',
         MUNI_SEARCH: 'Vilniaus',
         PRACT_TEXT: '',
         PRACT_SEARCH: '',
-        SERVICE_TEXT: 'Fizinės medicinos ir reabilitacijos gydytojo konsultacija (Vaikams) II lygis',
-        SERVICE_SEARCH: 'Fizinės medicinos',
-        TARGET_RESULT_TEXT: 'Antakalnio poliklinika',
+        SERVICE_TEXT: 'Dermatovenerologija (Vaikams)',
+        SERVICE_SEARCH: 'Dermatovenerologija',
+        TARGET_RESULT_TEXT: 'Dermatovenerologija (Vaikams)',
         // earliest date inputs
-        EARLIEST_DATE: false,
-        DAYS_AHEAD: 2,
-        EXCLUDE_ORGANIZATIONS: ['Šeškinės poliklinika, VšĮ', 'Euromed klinika, Sanum medicale, UAB', 'Viešoji įstaiga Vilniaus rajono poliklinika']
+        EARLIEST_DATE: true,
+        DAYS_AHEAD: 7,
+        EXCLUDE_ORGANIZATIONS: []
     },
     search_2: {
         MUNI_TEXT: 'Vilniaus m. sav.',
