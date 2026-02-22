@@ -31,7 +31,7 @@ const SEARCH_INPUTS = {
         // earliest date inputs
         EARLIEST_DATE: true,
         DAYS_AHEAD: 7,
-        EXCLUDE_ORGANIZATIONS: []
+        EXCLUDE_ORGANIZATIONS: ['Viešoji įstaiga Naujosios Vilnios poliklinika']
     },
     search_2: {
         MUNI_TEXT: 'Vilniaus m. sav.',
