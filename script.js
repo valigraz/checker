@@ -20,19 +20,19 @@ const SEARCH_INPUTS = {
     //     DAYS_AHEAD: 2,
     //     EXCLUDE_ORGANIZATIONS: ['Šeškinės poliklinika, VšĮ', 'Euromed klinika, Sanum medicale, UAB', 'Viešoji įstaiga Vilniaus rajono poliklinika']
     // },
-    search_1: {
-        MUNI_TEXT: 'Vilniaus m. sav.',
-        MUNI_SEARCH: 'Vilniaus',
-        PRACT_TEXT: '',
-        PRACT_SEARCH: '',
-        SERVICE_TEXT: 'Dermatovenerologija (Vaikams)',
-        SERVICE_SEARCH: 'Dermatovenerologija',
-        TARGET_RESULT_TEXT: 'Dermatovenerologija (Vaikams)',
-        // earliest date inputs
-        EARLIEST_DATE: true,
-        DAYS_AHEAD: 7,
-        EXCLUDE_ORGANIZATIONS: ['Viešoji įstaiga Naujosios Vilnios poliklinika']
-    },
+    // search_1: {
+    //     MUNI_TEXT: 'Vilniaus m. sav.',
+    //     MUNI_SEARCH: 'Vilniaus',
+    //     PRACT_TEXT: '',
+    //     PRACT_SEARCH: '',
+    //     SERVICE_TEXT: 'Dermatovenerologija (Vaikams)',
+    //     SERVICE_SEARCH: 'Dermatovenerologija',
+    //     TARGET_RESULT_TEXT: 'Dermatovenerologija (Vaikams)',
+    //     // earliest date inputs
+    //     EARLIEST_DATE: true,
+    //     DAYS_AHEAD: 7,
+    //     EXCLUDE_ORGANIZATIONS: ['Viešoji įstaiga Naujosios Vilnios poliklinika']
+    // },
     search_2: {
         MUNI_TEXT: 'Vilniaus m. sav.',
         MUNI_SEARCH: 'Vilniaus',
@@ -275,12 +275,12 @@ function sendHeartbeat(heartBeatHours) {
     });
 
     try {
-        const page1 = await browser.createBrowserContext().then(c => c.newPage());
+        // const page1 = await browser.createBrowserContext().then(c => c.newPage());
         const page2 = await browser.createBrowserContext().then(c => c.newPage());
         const page3 = await browser.createBrowserContext().then(c => c.newPage());
 
         await Promise.all([
-            page1.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 }),
+            // page1.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 }),
             page2.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 }),
             page3.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 }),
         ]);
@@ -349,7 +349,7 @@ function sendHeartbeat(heartBeatHours) {
         };
 
         await Promise.all([
-            runSearchAndCheck(page1, SEARCH_INPUTS.search_1),
+            // runSearchAndCheck(page1, SEARCH_INPUTS.search_1),
             runSearchAndCheck(page2, SEARCH_INPUTS.search_2),
             runSearchAndCheck(page3, SEARCH_INPUTS.search_3),
         ]);
