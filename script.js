@@ -43,7 +43,7 @@ const SEARCH_INPUTS = {
         TARGET_RESULT_TEXT: 'Fizinės medicinos ir reabilitacijos gydytojo konsultacija',
         // earliest date inputs
         EARLIEST_DATE: true,
-        DAYS_AHEAD: 100,
+        DAYS_AHEAD: 7,
         EXCLUDE_ORGANIZATIONS: []
     },
     // search_2: {
