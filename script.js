@@ -33,32 +33,45 @@ const SEARCH_INPUTS = {
     //     DAYS_AHEAD: 7,
     //     EXCLUDE_ORGANIZATIONS: ['Viešoji įstaiga Naujosios Vilnios poliklinika']
     // },
-    search_2: {
-        MUNI_TEXT: 'Vilniaus m. sav.',
-        MUNI_SEARCH: 'Vilniaus',
-        PRACT_TEXT: 'RIMA PIKŪNIENĖ(Vilniaus universiteto ligoninė Santaros klinikos, VšĮ)',
-        PRACT_SEARCH: 'RIMA PIKŪN',
-        SERVICE_TEXT: '',
-        SERVICE_SEARCH: '',
-        TARGET_RESULT_TEXT: 'Stacionarinė reabilitacija su slauga (Vaikams)',
-        // earliest date inputs
-        EARLIEST_DATE: false,
-        DAYS_AHEAD: null,
-        EXCLUDE_ORGANIZATIONS: []
-    },
-    search_3: {
+    search_1: {
         MUNI_TEXT: 'Vilniaus m. sav.',
         MUNI_SEARCH: 'Vilniaus',
         PRACT_TEXT: '',
         PRACT_SEARCH: '',
-        SERVICE_TEXT: 'Oftalmologija (Okuloplastinė chirurgija, vokų, ašarų takų, junginės, akiduobės patologija) II lygis',
-        SERVICE_SEARCH: 'Oftalmologija',
-        TARGET_RESULT_TEXT: 'Vilniaus universiteto ligoninė Santaros klinikos, VšĮ',
+        SERVICE_TEXT: 'Fizinės medicinos ir reabilitacijos gydytojo konsultacija (Suaugusiems) II lygis',
+        SERVICE_SEARCH: 'Fizinės medicinos',
+        TARGET_RESULT_TEXT: 'Fizinės medicinos ir reabilitacijos gydytojo konsultacija',
         // earliest date inputs
-        EARLIEST_DATE: false,
-        DAYS_AHEAD: null,
+        EARLIEST_DATE: true,
+        DAYS_AHEAD: 7,
         EXCLUDE_ORGANIZATIONS: []
     },
+    // search_2: {
+    //     MUNI_TEXT: 'Vilniaus m. sav.',
+    //     MUNI_SEARCH: 'Vilniaus',
+    //     PRACT_TEXT: 'RIMA PIKŪNIENĖ(Vilniaus universiteto ligoninė Santaros klinikos, VšĮ)',
+    //     PRACT_SEARCH: 'RIMA PIKŪN',
+    //     SERVICE_TEXT: '',
+    //     SERVICE_SEARCH: '',
+    //     TARGET_RESULT_TEXT: 'Stacionarinė reabilitacija su slauga (Vaikams)',
+    //     // earliest date inputs
+    //     EARLIEST_DATE: false,
+    //     DAYS_AHEAD: null,
+    //     EXCLUDE_ORGANIZATIONS: []
+    // },
+    // search_3: {
+    //     MUNI_TEXT: 'Vilniaus m. sav.',
+    //     MUNI_SEARCH: 'Vilniaus',
+    //     PRACT_TEXT: '',
+    //     PRACT_SEARCH: '',
+    //     SERVICE_TEXT: 'Oftalmologija (Okuloplastinė chirurgija, vokų, ašarų takų, junginės, akiduobės patologija) II lygis',
+    //     SERVICE_SEARCH: 'Oftalmologija',
+    //     TARGET_RESULT_TEXT: 'Vilniaus universiteto ligoninė Santaros klinikos, VšĮ',
+    //     // earliest date inputs
+    //     EARLIEST_DATE: false,
+    //     DAYS_AHEAD: null,
+    //     EXCLUDE_ORGANIZATIONS: []
+    // },
 }
 
 // ---- TELEGRAM (hardcoded) ----
@@ -275,14 +288,14 @@ function sendHeartbeat(heartBeatHours) {
     });
 
     try {
-        // const page1 = await browser.createBrowserContext().then(c => c.newPage());
-        const page2 = await browser.createBrowserContext().then(c => c.newPage());
-        const page3 = await browser.createBrowserContext().then(c => c.newPage());
+        const page1 = await browser.createBrowserContext().then(c => c.newPage());
+        // const page2 = await browser.createBrowserContext().then(c => c.newPage());
+        // const page3 = await browser.createBrowserContext().then(c => c.newPage());
 
         await Promise.all([
-            // page1.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 }),
-            page2.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 }),
-            page3.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 }),
+            page1.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 }),
+            // page2.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 }),
+            // page3.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 }),
         ]);
 
         const runSearchAndCheck = async (page, {MUNI_TEXT, MUNI_SEARCH, PRACT_TEXT, PRACT_SEARCH, SERVICE_TEXT, SERVICE_SEARCH, TARGET_RESULT_TEXT, EARLIEST_DATE, DAYS_AHEAD, EXCLUDE_ORGANIZATIONS}) => {            
@@ -349,9 +362,9 @@ function sendHeartbeat(heartBeatHours) {
         };
 
         await Promise.all([
-            // runSearchAndCheck(page1, SEARCH_INPUTS.search_1),
-            runSearchAndCheck(page2, SEARCH_INPUTS.search_2),
-            runSearchAndCheck(page3, SEARCH_INPUTS.search_3),
+            runSearchAndCheck(page1, SEARCH_INPUTS.search_1),
+            // runSearchAndCheck(page2, SEARCH_INPUTS.search_2),
+            // runSearchAndCheck(page3, SEARCH_INPUTS.search_3),
         ]);
 
         if (sendHeartbeat(HEARTBEAT_HOURS)) {
