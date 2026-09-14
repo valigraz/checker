@@ -319,8 +319,8 @@ function sendHeartbeat(heartBeatHours) {
                 console.log('Service selected:', organization);
             }
 
-            const referral = await ensureSelected(page, '#referralInput', 'Su siuntimu', 'Su siuntimu');
-            console.log('referral selected:', referral);
+            // const referral = await ensureSelected(page, '#referralInput', 'Su siuntimu', 'Su siuntimu');
+            // console.log('referral selected:', referral);
             
             await page.click("#searchButton").catch(() => { });
             let found;
