@@ -3,8 +3,8 @@ const puppeteer = require("puppeteer");
 // ---- CONFIG ----
 const MOD = process.platform === 'darwin' ? 'Meta' : 'Control';
 const STEP_TIMEOUT = 15_000;
-const HEARTBEAT_HOURS = [4, 20, 14]; // UTC hours. Vilnius time +2 hours
-const NOT_FOUND_NOTIFY_HOURS = [11, 14]; // UTC hours. Vilnius time +2 hours
+const HEARTBEAT_HOURS = [4, 20]; // UTC hours. Vilnius time +2 hours
+const NOT_FOUND_NOTIFY_HOURS = [11, 18]; // UTC hours. Vilnius time +2 hours
 
 const SEARCH_INPUTS = {
     search_1: {
@@ -315,7 +315,7 @@ function sendHeartbeat(heartBeatHours) {
             }
 
             if (ORGANIZATION_TEXT) {
-                const organization = await ensureSelected(page, '#serviceInput', ORGANIZATION_TEXT, ORGANIZATION_SEARCH);
+                const organization = await ensureSelected(page, '#organizationInput', ORGANIZATION_TEXT, ORGANIZATION_SEARCH);
                 console.log('Service selected:', organization);
             }
 
