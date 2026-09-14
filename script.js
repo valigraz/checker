@@ -7,6 +7,21 @@ const HEARTBEAT_HOURS = [4, 20, 18]; // UTC hours. Vilnius time +2 hours
 const NOT_FOUND_NOTIFY_HOURS = [11]; // UTC hours. Vilnius time +2 hours
 
 const SEARCH_INPUTS = {
+    search_1: {
+        MUNI_TEXT: 'Vilniaus m. sav.',
+        MUNI_SEARCH: 'Vilniaus',
+        PRACT_TEXT: '',
+        PRACT_SEARCH: '',
+        SERVICE_TEXT: 'Fizinės medicinos ir reabilitacijos gydytojo konsultacija (Suaugusiems) II lygis',
+        SERVICE_SEARCH: 'Fizinės medicinos',
+        ORGANIZATION_TEXT: 'Šeškinės poliklinika, VšĮ, Vilnius, Šeškinės g. 24',
+        ORGANIZATION_SEARCH: 'Šeškinės poliklinika',
+        TARGET_RESULT_TEXT: 'Šeškinės poliklinika',
+        // earliest date inputs
+        EARLIEST_DATE: true,
+        DAYS_AHEAD: 7,
+        EXCLUDE_ORGANIZATIONS: []
+    },
     // search_1: {
     //     MUNI_TEXT: 'Vilniaus m. sav.',
     //     MUNI_SEARCH: 'Vilniaus',
@@ -33,19 +48,6 @@ const SEARCH_INPUTS = {
     //     DAYS_AHEAD: 7,
     //     EXCLUDE_ORGANIZATIONS: ['Viešoji įstaiga Naujosios Vilnios poliklinika']
     // },
-    search_1: {
-        MUNI_TEXT: 'Vilniaus m. sav.',
-        MUNI_SEARCH: 'Vilniaus',
-        PRACT_TEXT: '',
-        PRACT_SEARCH: '',
-        SERVICE_TEXT: 'Fizinės medicinos ir reabilitacijos gydytojo konsultacija (Suaugusiems) II lygis',
-        SERVICE_SEARCH: 'Fizinės medicinos',
-        TARGET_RESULT_TEXT: 'Šeškinės poliklinika',
-        // earliest date inputs
-        EARLIEST_DATE: true,
-        DAYS_AHEAD: 7,
-        EXCLUDE_ORGANIZATIONS: []
-    },
     // search_2: {
     //     MUNI_TEXT: 'Vilniaus m. sav.',
     //     MUNI_SEARCH: 'Vilniaus',
@@ -298,7 +300,7 @@ function sendHeartbeat(heartBeatHours) {
             // page3.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 }),
         ]);
 
-        const runSearchAndCheck = async (page, {MUNI_TEXT, MUNI_SEARCH, PRACT_TEXT, PRACT_SEARCH, SERVICE_TEXT, SERVICE_SEARCH, TARGET_RESULT_TEXT, EARLIEST_DATE, DAYS_AHEAD, EXCLUDE_ORGANIZATIONS}) => {            
+        const runSearchAndCheck = async (page, {MUNI_TEXT, MUNI_SEARCH, PRACT_TEXT, PRACT_SEARCH, SERVICE_TEXT, SERVICE_SEARCH, ORGANIZATION_TEXT, ORGANIZATION_SEARCH, TARGET_RESULT_TEXT, EARLIEST_DATE, DAYS_AHEAD, EXCLUDE_ORGANIZATIONS}) => {            
             const muni = await ensureSelected(page, '#municipalityInput', MUNI_TEXT, MUNI_SEARCH);
             console.log('Municipality selected:', muni);
 
@@ -310,6 +312,11 @@ function sendHeartbeat(heartBeatHours) {
             if (SERVICE_TEXT) {
                 const service = await ensureSelected(page, '#serviceInput', SERVICE_TEXT, SERVICE_SEARCH);
                 console.log('Service selected:', service);
+            }
+
+            if (ORGANIZATION_TEXT) {
+                const organization = await ensureSelected(page, '#serviceInput', ORGANIZATION_TEXT, ORGANIZATION_SEARCH);
+                console.log('Service selected:', organization);
             }
 
             const referral = await ensureSelected(page, '#referralInput', 'Su siuntimu', 'Su siuntimu');
