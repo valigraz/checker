@@ -311,6 +311,9 @@ function sendHeartbeat(heartBeatHours) {
                 const service = await ensureSelected(page, '#serviceInput', SERVICE_TEXT, SERVICE_SEARCH);
                 console.log('Service selected:', service);
             }
+
+            const referral = await ensureSelected(page, '#referralInput', 'Su siuntimu', 'Su siuntimu');
+            console.log('referral selected:', referral);
             
             await page.click("#searchButton").catch(() => { });
             let found;
