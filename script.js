@@ -2,7 +2,7 @@ const puppeteer = require("puppeteer");
 
 // ---- CONFIG ----
 const MOD = process.platform === 'darwin' ? 'Meta' : 'Control';
-const STEP_TIMEOUT = 15_000;
+const STEP_TIMEOUT = 20_000;
 const HEARTBEAT_HOURS = [4, 20]; // UTC hours. Vilnius time +2 hours
 const NOT_FOUND_NOTIFY_HOURS = [11, 18]; // UTC hours. Vilnius time +2 hours
 
