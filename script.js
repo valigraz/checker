@@ -3,7 +3,7 @@ const puppeteer = require("puppeteer");
 // ---- CONFIG ----
 const MOD = process.platform === 'darwin' ? 'Meta' : 'Control';
 const STEP_TIMEOUT = 15_000;
-const HEARTBEAT_HOURS = [4, 20]; // UTC hours. Vilnius time +2 hours
+const HEARTBEAT_HOURS = [4, 20, 18]; // UTC hours. Vilnius time +2 hours
 const NOT_FOUND_NOTIFY_HOURS = [11]; // UTC hours. Vilnius time +2 hours
 
 const SEARCH_INPUTS = {
@@ -40,7 +40,7 @@ const SEARCH_INPUTS = {
         PRACT_SEARCH: '',
         SERVICE_TEXT: 'Fizinės medicinos ir reabilitacijos gydytojo konsultacija (Suaugusiems) II lygis',
         SERVICE_SEARCH: 'Fizinės medicinos',
-        TARGET_RESULT_TEXT: 'Fizinės medicinos ir reabilitacijos gydytojo konsultacija',
+        TARGET_RESULT_TEXT: 'Šeškinės poliklinika',
         // earliest date inputs
         EARLIEST_DATE: true,
         DAYS_AHEAD: 7,
