@@ -316,7 +316,7 @@ function sendHeartbeat(heartBeatHours) {
 
             if (ORGANIZATION_TEXT) {
                 const organization = await ensureSelected(page, '#organizationInput', ORGANIZATION_TEXT, ORGANIZATION_SEARCH);
-                console.log('Service selected:', organization);
+                console.log('Organization selected:', organization);
             }
 
             // const referral = await ensureSelected(page, '#referralInput', 'Su siuntimu', 'Su siuntimu');
