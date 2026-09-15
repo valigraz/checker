@@ -17,7 +17,7 @@ const SEARCH_INPUTS = {
         TARGET_RESULT_TEXT: 'Šeškinės poliklinika',
         // earliest date inputs
         EARLIEST_DATE: true,
-        DAYS_AHEAD: 7,
+        DAYS_AHEAD: 45,
         EXCLUDE_ORGANIZATIONS: [],
         INCLUDE_ORGANIZATIONS: ['Šeškinės poliklinika, VšĮ /']
     },
@@ -173,25 +173,6 @@ async function selectNgOption(page, rootSel, searchFragment, exactText, timeout 
     return selected;
 }
 
-const BLOCKED_RESOURCE_TYPES = new Set(['image', 'font', 'media', 'stylesheet']);
-const BLOCKED_URL_PATTERNS = [
-    'google-analytics.com', 'googletagmanager.com', 'doubleclick.net',
-    'facebook.net', 'facebook.com/tr', 'hotjar.com', 'clarity.ms',
-];
-
-async function blockUnnecessaryResources(page) {
-    await page.setRequestInterception(true);
-    page.on('request', (req) => {
-        const type = req.resourceType();
-        const reqUrl = req.url();
-        if (BLOCKED_RESOURCE_TYPES.has(type) || BLOCKED_URL_PATTERNS.some((p) => reqUrl.includes(p))) {
-            req.abort().catch(() => { });
-        } else {
-            req.continue().catch(() => { });
-        }
-    });
-}
-
 async function readControlValue(page, rootSel) {
     return page
         .evaluate((root) => {
@@ -319,12 +300,6 @@ function sendHeartbeat(heartBeatHours) {
         const page1 = await browser.createBrowserContext().then(c => c.newPage());
         // const page2 = await browser.createBrowserContext().then(c => c.newPage());
         // const page3 = await browser.createBrowserContext().then(c => c.newPage());
-
-        await Promise.all([
-            blockUnnecessaryResources(page1),
-            // blockUnnecessaryResources(page2),
-            // blockUnnecessaryResources(page3),
-        ]);
 
         await Promise.all([
             page1.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 }),
