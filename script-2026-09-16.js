@@ -2,8 +2,8 @@ const puppeteer = require("puppeteer");
 
 // ---- CONFIG ----
 const MOD = process.platform === 'darwin' ? 'Meta' : 'Control';
-const STEP_TIMEOUT = 15_000;
-const HEARTBEAT_HOURS = [4, 13]; // UTC hours. Vilnius time +2 hours
+const STEP_TIMEOUT = 20_000;
+const HEARTBEAT_HOURS = [4, 20]; // UTC hours. Vilnius time +2 hours
 const NOT_FOUND_NOTIFY_HOURS = [11, 18]; // UTC hours. Vilnius time +2 hours
 
 const SEARCH_INPUTS = {
@@ -14,12 +14,13 @@ const SEARCH_INPUTS = {
         PRACT_SEARCH: '',
         SERVICE_TEXT: 'Fizinės medicinos ir reabilitacijos gydytojo konsultacija (Suaugusiems) II lygis',
         SERVICE_SEARCH: 'Fizinės medicinos',
+        ORGANIZATION_TEXT: 'Šeškinės poliklinika, VšĮ, Vilnius, Šeškinės g. 24',
+        ORGANIZATION_SEARCH: 'Šeškinės poliklinika, VšĮ, Vilnius, Šeškinės g. 24',
         TARGET_RESULT_TEXT: 'Šeškinės poliklinika',
         // earliest date inputs
         EARLIEST_DATE: true,
         DAYS_AHEAD: 7,
-        EXCLUDE_ORGANIZATIONS: [],
-        INCLUDE_ORGANIZATIONS: ['Šeškinės poliklinika, VšĮ /']
+        EXCLUDE_ORGANIZATIONS: []
     },
     // search_1: {
     //     MUNI_TEXT: 'Vilniaus m. sav.',
@@ -173,25 +174,6 @@ async function selectNgOption(page, rootSel, searchFragment, exactText, timeout 
     return selected;
 }
 
-const BLOCKED_RESOURCE_TYPES = new Set(['image', 'font', 'media', 'stylesheet']);
-const BLOCKED_URL_PATTERNS = [
-    'google-analytics.com', 'googletagmanager.com', 'doubleclick.net',
-    'facebook.net', 'facebook.com/tr', 'hotjar.com', 'clarity.ms',
-];
-
-async function blockUnnecessaryResources(page) {
-    await page.setRequestInterception(true);
-    page.on('request', (req) => {
-        const type = req.resourceType();
-        const reqUrl = req.url();
-        if (BLOCKED_RESOURCE_TYPES.has(type) || BLOCKED_URL_PATTERNS.some((p) => reqUrl.includes(p))) {
-            req.abort().catch(() => { });
-        } else {
-            req.continue().catch(() => { });
-        }
-    });
-}
-
 async function readControlValue(page, rootSel) {
     return page
         .evaluate((root) => {
@@ -225,7 +207,7 @@ async function waitForTextAnywhere(page, text, timeout = 30000) {
     return ok;
 }
 
-async function waitForDateInTable(page, DAYS_AHEAD, EXCLUDE_ORGANIZATIONS, INCLUDE_ORGANIZATIONS, timeout = 8000) {
+async function waitForDateInTable(page, DAYS_AHEAD, EXCLUDE_ORGANIZATIONS, timeout = 8000) {
   const REQUIRED_NEED = "Ligonių kasos";
   const TABLE_SELECTOR = "table.table tbody";
 
@@ -248,7 +230,7 @@ async function waitForDateInTable(page, DAYS_AHEAD, EXCLUDE_ORGANIZATIONS, INCLU
 
   const ok = await page
     .waitForFunction(
-      ({ TABLE_SELECTOR, REQUIRED_NEED, EXCLUDE_ORGANIZATIONS, INCLUDE_ORGANIZATIONS, allowedDates }) => {
+      ({ TABLE_SELECTOR, REQUIRED_NEED, EXCLUDE_ORGANIZATIONS, allowedDates }) => {
         const tbody = document.querySelector(TABLE_SELECTOR);
         if (!tbody) return false;
 
@@ -266,14 +248,6 @@ async function waitForDateInTable(page, DAYS_AHEAD, EXCLUDE_ORGANIZATIONS, INCLU
             continue; // skip excluded orgs, don't stop waiting
           }
 
-          if (
-            Array.isArray(INCLUDE_ORGANIZATIONS) &&
-            INCLUDE_ORGANIZATIONS.length > 0 &&
-            !INCLUDE_ORGANIZATIONS.some((v) => orgCell.includes(v))
-          ) {
-            continue; // not in INCLUDE_ORGANIZATIONS, don't stop waiting
-          }
-
           const need = (tds[3].textContent || "").replace(/\s+/g, " ").trim();
           if (need !== REQUIRED_NEED) continue;
 
@@ -288,7 +262,7 @@ async function waitForDateInTable(page, DAYS_AHEAD, EXCLUDE_ORGANIZATIONS, INCLU
         return false; // keep waiting
       },
       { timeout },
-      { TABLE_SELECTOR, REQUIRED_NEED, EXCLUDE_ORGANIZATIONS, INCLUDE_ORGANIZATIONS, allowedDates }
+      { TABLE_SELECTOR, REQUIRED_NEED, EXCLUDE_ORGANIZATIONS, allowedDates }
     )
     .then(() => true)
     .catch(() => false);
@@ -321,18 +295,12 @@ function sendHeartbeat(heartBeatHours) {
         // const page3 = await browser.createBrowserContext().then(c => c.newPage());
 
         await Promise.all([
-            blockUnnecessaryResources(page1),
-            // blockUnnecessaryResources(page2),
-            // blockUnnecessaryResources(page3),
-        ]);
-
-        await Promise.all([
             page1.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 }),
             // page2.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 }),
             // page3.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 }),
         ]);
 
-        const runSearchAndCheck = async (page, {MUNI_TEXT, MUNI_SEARCH, PRACT_TEXT, PRACT_SEARCH, SERVICE_TEXT, SERVICE_SEARCH, TARGET_RESULT_TEXT, EARLIEST_DATE, DAYS_AHEAD, EXCLUDE_ORGANIZATIONS, INCLUDE_ORGANIZATIONS}) => {            
+        const runSearchAndCheck = async (page, {MUNI_TEXT, MUNI_SEARCH, PRACT_TEXT, PRACT_SEARCH, SERVICE_TEXT, SERVICE_SEARCH, ORGANIZATION_TEXT, ORGANIZATION_SEARCH, TARGET_RESULT_TEXT, EARLIEST_DATE, DAYS_AHEAD, EXCLUDE_ORGANIZATIONS}) => {            
             const muni = await ensureSelected(page, '#municipalityInput', MUNI_TEXT, MUNI_SEARCH);
             console.log('Municipality selected:', muni);
 
@@ -345,12 +313,20 @@ function sendHeartbeat(heartBeatHours) {
                 const service = await ensureSelected(page, '#serviceInput', SERVICE_TEXT, SERVICE_SEARCH);
                 console.log('Service selected:', service);
             }
+
+            if (ORGANIZATION_TEXT) {
+                const organization = await ensureSelected(page, '#organizationInput', ORGANIZATION_TEXT, ORGANIZATION_SEARCH);
+                console.log('Organization selected:', organization);
+            }
+
+            // const referral = await ensureSelected(page, '#referralInput', 'Su siuntimu', 'Su siuntimu');
+            // console.log('referral selected:', referral);
             
             await page.click("#searchButton").catch(() => { });
             let found;
 
             if (EARLIEST_DATE) {
-                found = await waitForDateInTable(page, DAYS_AHEAD, EXCLUDE_ORGANIZATIONS, INCLUDE_ORGANIZATIONS, 8000);
+                found = await waitForDateInTable(page, DAYS_AHEAD, EXCLUDE_ORGANIZATIONS, 8000);
             } else {
                 found = await waitForTextAnywhere(page, TARGET_RESULT_TEXT, 8000);
             }
@@ -414,12 +390,6 @@ function sendHeartbeat(heartBeatHours) {
         }
     } catch (err) {
         console.error("[ERROR] ", err);
-        try {
-            const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
-            await sendTelegramMessage(`🔴 <b>Checker crashed</b>\n${ltTime}\n${err.message || err}`);
-        } catch (tgErr) {
-            console.error('[TG] Failure alert send failed:', tgErr.message);
-        }
     } finally {
         await browser.close();
     }
