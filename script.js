@@ -17,7 +17,7 @@ const SEARCH_INPUTS = {
         TARGET_RESULT_TEXT: 'Šeškinės poliklinika',
         // earliest date inputs
         EARLIEST_DATE: true,
-        DAYS_AHEAD: 45,
+        DAYS_AHEAD: 14,
         EXCLUDE_ORGANIZATIONS: [],
         INCLUDE_ORGANIZATIONS: ['Šeškinės poliklinika, VšĮ /']
     },
@@ -352,7 +352,7 @@ function sendHeartbeat(heartBeatHours) {
                 } catch (e) {
                     console.error('[TG] Photo send failed:', e.message);
                 }
-            } else { // if (sendHeartbeat(NOT_FOUND_NOTIFY_HOURS))
+            } else if (sendHeartbeat(NOT_FOUND_NOTIFY_HOURS)) {
                 const ltTime = new Date().toLocaleString('lt-LT', { timeZone: 'Europe/Vilnius' });
                 const caption =
                     `<b>Not found</b>\n` +

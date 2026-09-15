@@ -13,6 +13,8 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --no-deprecation
     steps:
       - name: Log trigger time (UTC)
         run: echo "Triggered at $(date -u)"
