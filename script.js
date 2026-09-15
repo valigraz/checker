@@ -15,7 +15,7 @@ const SEARCH_INPUTS = {
         SERVICE_TEXT: 'Fizinės medicinos ir reabilitacijos gydytojo konsultacija (Suaugusiems) II lygis',
         SERVICE_SEARCH: 'Fizinės medicinos',
         ORGANIZATION_TEXT: 'Šeškinės poliklinika, VšĮ, Vilnius, Šeškinės g. 24',
-        ORGANIZATION_SEARCH: 'Šeškinės poliklinika',
+        ORGANIZATION_SEARCH: 'Šeškinės poliklinika, VšĮ, Vilnius, Šeškinės g. 24',
         TARGET_RESULT_TEXT: 'Šeškinės poliklinika',
         // earliest date inputs
         EARLIEST_DATE: true,
